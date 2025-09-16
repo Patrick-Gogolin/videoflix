@@ -11,4 +11,3 @@ urlpatterns = [
     path('password_reset/', SendPasswortResetMail.as_view(), name='password_reset'),
     path('password_confirm/<uidb64>/<token>/', ConfirmPasswordResetView.as_view(), name='password_confirm'),
 ]
-

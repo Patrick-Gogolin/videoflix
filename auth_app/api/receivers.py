@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
@@ -8,33 +7,19 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 from .signals import user_registered, password_reset_requested
+import django_rq
+from .tasks import send_activation_email_task, send_password_reset_email
 
 
 @receiver(user_registered)
-def send_activation_email(sender, user, **kwargs):
-    token = default_token_generator.make_token(user)
-    uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-    
-    activation_link = f"http://127.0.0.1:5500/pages/auth/activate.html?uid={uidb64}&token={token}"
+def enqueue_activation_email(sender, user, **kwargs):
+    queue = django_rq.get_queue('default')
+    queue.enqueue(send_activation_email_task, user.pk, user.email)
 
-    subject = "Confirm your email"
-    from_email = settings.DEFAULT_FROM_EMAIL
-    to = [user.email]
-
-    html_content = render_to_string("emails/activation_email.html", {
-        "activation_link": activation_link,
-        "email": user.email
-    })
-
-    text_content = f"Please activate your account: {activation_link}"
-
-    msg = EmailMultiAlternatives(subject, text_content, from_email, to)
-    msg.attach_alternative(html_content, "text/html")
-    
-    try:
-        msg.send(fail_silently=False)
-    except Exception as e:
-        print(f"Error sending email: {e}")
+@receiver(password_reset_requested)
+def enqueue_password_reset_email(sender, user, token, uidb64, **kwargs):
+    queue = django_rq.get_queue('default')
+    queue.enqueue(send_password_reset_email, user.pk, token, uidb64)
 
 @receiver(password_reset_requested)
 def send_password_reset_email(sender, user, token, uidb64, **kwargs):
