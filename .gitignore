@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+
+# Logs
+*.log
+
+# DB
+db.sqlite3
+
+# Environment
+.env
+venv/
+env/
+
+# Django migrations – keep init, ignore rest
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# VS Code / IDEs
+.vscode/
+.idea/
+
+# Media / staticfiles (optional)
+media/
+staticfiles/
+
+# Test & Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Secrets & certs
+*.pem

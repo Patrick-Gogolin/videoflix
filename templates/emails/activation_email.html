@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f7f7f7;
+        padding: 20px;
+      }
+      .container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 600px;
+        margin: auto;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .button {
+        display: inline-block;
+        background-color: #2e3edf;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <img src="http://localhost:8000/static/images/logo.png" alt="Logo" class="logo">
+      <p>Hello {{ email }},</p>
+      <p>Thank you for registering with Videoflix! To complete your registration and verify your email address, please click the link below:</p>
+      <a href="{{ activation_link }}" class="button">Activate Account</a>
+      <p>If you didn't create an account with us, please disregard this email.</p>
+      <p>Best regards,</p>
+      <p>Your Videoflix Team</p>
+    </div>
+  </body>
+</html>
