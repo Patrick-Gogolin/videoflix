@@ -17,29 +17,23 @@ class RegistrationView(APIView):
 
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
-
-        data = {}
-
-        if serializer.is_valid():
-            try:
-                saved_account = serializer.save()
-                token  = default_token_generator.make_token(saved_account)
-
-                user_registered.send(self.__class__, user=saved_account)
-
-                data = {
-                    "user": {
-                        "id": saved_account.pk,
-                        "email": saved_account.email,
-                    },
-                    "token": token
-                }
-                
-                return Response(data, status=status.HTTP_201_CREATED)
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        saved_account = serializer.save()
+
+        token  = default_token_generator.make_token(saved_account)
+        
+        user_registered.send(self.__class__, user=saved_account)
+
+        data = {
+                "user": {
+                    "id": saved_account.pk,
+                    "email": saved_account.email,
+                },
+                "token": token
+            }
+                
+        return Response(data, status=status.HTTP_201_CREATED)
 
 class ActivateAccountView(APIView):
     def get(self, request, uidb64, token):
@@ -68,22 +62,22 @@ class SendPasswortResetMail(APIView):
     def post(self, request):
         serializer = PasswordResetSerializer(data=request.data)
 
-        if serializer.is_valid():
-                serializer.save()
-                email = serializer.validated_data['email']
-                user = User.objects.get(email=email)
-                token = default_token_generator.make_token(user)
-                uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-                password_reset_requested.send(
-                    sender=self.__class__,
-                    user=user,
-                    token=token,
-                    uidb64=uidb64
-                )
-                return Response({"detail": "An email has been sent to reset your password."})
+        email = serializer.validated_data['email']
+        user = User.objects.get(email=email)
+        token = default_token_generator.make_token(user)
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+
+        password_reset_requested.send(
+                sender=self.__class__,
+                user=user,
+                token=token,
+                uidb64=uidb64
+            )
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "An email has been sent to reset your password."})
     
 
 class ConfirmPasswordResetView(APIView):

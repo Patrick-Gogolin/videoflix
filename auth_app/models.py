@@ -10,4 +10,4 @@ class ActivationToken(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def is_valid(self):
-        return timezone.now() < self.created_at + timedelta(seconds=30)
+        return timezone.now() < self.created_at + timedelta(days=1)
