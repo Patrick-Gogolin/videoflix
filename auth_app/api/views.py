@@ -8,9 +8,10 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RegistrationSerializer,PasswordResetSerializer, ConfirmNewPasswordSerializer
+from .serializers import RegistrationSerializer, PasswordResetSerializer, ConfirmNewPasswordSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .receivers import password_reset_requested, user_registered
+
 
 class RegistrationView(APIView):
     permission_classes = [AllowAny]
@@ -21,40 +22,42 @@ class RegistrationView(APIView):
         serializer.is_valid(raise_exception=True)
         saved_account = serializer.save()
 
-        token  = default_token_generator.make_token(saved_account)
-        
+        token = default_token_generator.make_token(saved_account)
+
         user_registered.send(self.__class__, user=saved_account)
 
         data = {
-                "user": {
-                    "id": saved_account.pk,
-                    "email": saved_account.email,
-                },
-                "token": token
-            }
-                
+            "user": {
+                "id": saved_account.pk,
+                "email": saved_account.email,
+            },
+            "token": token
+        }
+
         return Response(data, status=status.HTTP_201_CREATED)
+
 
 class ActivateAccountView(APIView):
     def get(self, request, uidb64, token):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
-        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             return Response({"message": "Invalid activation link."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         if not hasattr(user, 'activation_token') or not user.activation_token.is_valid():
             user.activation_token.delete()
             return Response({"message": "Activation link is invalid or has expired."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         if not default_token_generator.check_token(user, token):
             return Response({"message": "Activation link is invalid or has expired."}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         user.is_active = True
         user.save()
         user.activation_token.delete()
 
         return Response({"message": "Account successfully activated."}, status=status.HTTP_200_OK)
+
 
 class SendPasswortResetMail(APIView):
     permission_classes = [AllowAny]
@@ -72,35 +75,35 @@ class SendPasswortResetMail(APIView):
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
 
         password_reset_requested.send(
-                sender=self.__class__,
-                user=user,
-                token=token,
-                uidb64=uidb64
-            )
-        
+            sender=self.__class__,
+            user=user,
+            token=token,
+            uidb64=uidb64
+        )
+
         return Response({"detail": "An email has been sent to reset your password."})
-    
+
 
 class ConfirmPasswordResetView(APIView):
     def post(self, request, uidb64, token):
         serializer = ConfirmNewPasswordSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
         try:
             uidb64 = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uidb64)
-        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             return Response({"message": "Invalid link."}, status=status.HTTP_400_BAD_REQUEST)
-            
+
         if not hasattr(user, 'activation_token') or not user.activation_token.is_valid():
-                if hasattr(user, 'activation_token'):
-                    user.activation_token.delete()
-                return Response({"message": "Activation link is invalid or has expired."}, status=status.HTTP_400_BAD_REQUEST)
-        
+            if hasattr(user, 'activation_token'):
+                user.activation_token.delete()
+            return Response({"message": "Activation link is invalid or has expired."}, status=status.HTTP_400_BAD_REQUEST)
+
         if not default_token_generator.check_token(user, token):
-                return Response({"message": "Activation link is invalid or has expired."}, status=status.HTTP_400_BAD_REQUEST)
-            
+            return Response({"message": "Activation link is invalid or has expired."}, status=status.HTTP_400_BAD_REQUEST)
+
         new_password = serializer.validated_data['new_password']
         user.set_password(new_password)
         user.save()
@@ -109,3 +112,66 @@ class ConfirmPasswordResetView(APIView):
             user.activation_token.delete()
 
         return Response({"detail": "Your Password has been successfully reset."}, status=status.HTTP_200_OK)
+
+
+class LoginView(TokenObtainPairView):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        refresh = response.data.get('refresh')
+        access = response.data.get('access')
+
+        response.set_cookie(
+            key='access_token',
+            value=access,
+            httponly=True,
+            samesite='Lax',
+            secure=True
+        )
+
+        response.set_cookie(
+            key='refresh_token',
+            value=refresh,
+            httponly=True,
+            samesite='Lax',
+            secure=True
+        )
+
+        response.data = {
+            "detail": "Login successful",
+            "user": {
+                "id": 1,
+                "username": "user@example.com"
+            }
+        }
+        return response
+
+class CookieTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.COOKIES.get('refresh_token')
+
+        if refresh_token is None:
+            return Response({"detail": "Refresh token not provided."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = self.get_serializer(data={'refresh': refresh_token})
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except:
+            return Response({"detail": "Invalid refresh token."}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        access_token = serializer.validated_data.get('access')
+
+        response = Response({
+        "detail": "Token refreshed",
+        "access": access_token
+        }, status=status.HTTP_200_OK)
+
+        response.set_cookie(
+            key='access_token',
+            value=access_token,
+            httponly=True,
+            samesite='Lax',
+            secure=True
+        )
+
+        return response
