@@ -13,7 +13,7 @@ def send_activation_email_task(user_id, user_email):
     activation_link = f"http://127.0.0.1:5500/pages/auth/activate.html?uid={uidb64}&token={token}"
     
     send_email(subject="Confirm your email",
-                to_email=user_email,
+                recipient=user_email,
                 template_name="emails/activation_email.html",
                 link=activation_link,
                 text_content="Click the link to activate your account:")
@@ -22,7 +22,7 @@ def send_password_reset_email(user_email, token, uidb64):
    reset_url = f"http://127.0.0.1:5500/pages/auth/confirm_password.html?uid={uidb64}&token={token}"
 
    send_email(subject="Reset your Password",
-                to_email=user_email,
+                recipient=user_email,
                 template_name="emails/password_reset_email.html",
                 link=reset_url,
                 text_content="Click the link to reset your password:")

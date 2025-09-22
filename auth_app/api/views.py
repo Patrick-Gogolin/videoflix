@@ -17,7 +17,7 @@ class RegistrationView(APIView):
 
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
-        
+
         serializer.is_valid(raise_exception=True)
         saved_account = serializer.save()
 
@@ -67,6 +67,7 @@ class SendPasswortResetMail(APIView):
 
         email = serializer.validated_data['email']
         user = User.objects.get(email=email)
+
         token = default_token_generator.make_token(user)
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
 
@@ -83,24 +84,28 @@ class SendPasswortResetMail(APIView):
 class ConfirmPasswordResetView(APIView):
     def post(self, request, uidb64, token):
         serializer = ConfirmNewPasswordSerializer(data=request.data)
-        if serializer.is_valid():
-            try:
-                uidb64 = force_str(urlsafe_base64_decode(uidb64))
-                user = User.objects.get(pk=uidb64)
-            except(TypeError, ValueError, OverflowError, User.DoesNotExist):
-                return Response({"message": "Invalid link."}, status=status.HTTP_400_BAD_REQUEST)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            uidb64 = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uidb64)
+        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({"message": "Invalid link."}, status=status.HTTP_400_BAD_REQUEST)
             
-            if not hasattr(user, 'activation_token') or not user.activation_token.is_valid():
-                user.activation_token.delete()
+        if not hasattr(user, 'activation_token') or not user.activation_token.is_valid():
+                if hasattr(user, 'activation_token'):
+                    user.activation_token.delete()
                 return Response({"message": "Activation link is invalid or has expired."}, status=status.HTTP_400_BAD_REQUEST)
         
-            if not default_token_generator.check_token(user, token):
+        if not default_token_generator.check_token(user, token):
                 return Response({"message": "Activation link is invalid or has expired."}, status=status.HTTP_400_BAD_REQUEST)
             
-            new_password = serializer.validated_data['new_password']
-            user.set_password(new_password)
-            user.save()
+        new_password = serializer.validated_data['new_password']
+        user.set_password(new_password)
+        user.save()
+
+        if hasattr(user, 'activation_token'):
             user.activation_token.delete()
-            return Response({"detail": "Your Password has been successfully reset."}, status=status.HTTP_200_OK)
-        
-        return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({"detail": "Your Password has been successfully reset."}, status=status.HTTP_200_OK)
