@@ -1,5 +1,7 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from ..models import ActivationToken
 
 
@@ -64,4 +66,29 @@ class ConfirmNewPasswordSerializer(serializers.Serializer):
     def validate(self, data):
         if data['new_password'] != data['confirm_password']:
             raise serializers.ValidationError("Passwords do not match.")
+        return data
+    
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if "username" in self.fields:
+            self.fields.pop("username")
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        try: 
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("No active account found with the given credentials")
+        
+        if not user.check_password(password):
+            raise serializers.ValidationError("No active account found with the given credentials")
+
+        data = super().validate({"username": user.username, "password": password})
         return data

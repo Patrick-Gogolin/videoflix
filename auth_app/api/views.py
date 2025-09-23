@@ -8,9 +8,11 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RegistrationSerializer, PasswordResetSerializer, ConfirmNewPasswordSerializer
+from .serializers import RegistrationSerializer, PasswordResetSerializer, ConfirmNewPasswordSerializer, CustomTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.tokens import RefreshToken
 from .receivers import password_reset_requested, user_registered
+
 
 
 class RegistrationView(APIView):
@@ -115,14 +117,28 @@ class ConfirmPasswordResetView(APIView):
 
 
 class LoginView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        refresh = response.data.get('refresh')
-        access = response.data.get('access')
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = User.objects.get(email=request.data['email'])
+
+        refresh = serializer.validated_data['refresh']
+        access = serializer.validated_data['access']
+
+        response = Response({
+            "detail": "Login successful",
+            "user": {
+                "id": user.id,
+                "username": user.username
+            }
+        })
 
         response.set_cookie(
             key='access_token',
-            value=access,
+            value=str(access),
             httponly=True,
             samesite='Lax',
             secure=True
@@ -130,19 +146,12 @@ class LoginView(TokenObtainPairView):
 
         response.set_cookie(
             key='refresh_token',
-            value=refresh,
+            value=str(refresh),
             httponly=True,
             samesite='Lax',
             secure=True
         )
 
-        response.data = {
-            "detail": "Login successful",
-            "user": {
-                "id": 1,
-                "username": "user@example.com"
-            }
-        }
         return response
 
 class CookieTokenRefreshView(TokenRefreshView):
@@ -173,5 +182,26 @@ class CookieTokenRefreshView(TokenRefreshView):
             samesite='Lax',
             secure=True
         )
+
+        return response
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get('refresh_token')
+
+        if refresh_token is None:
+            return Response({"detail": "Refresh token not provided."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        except Exception as e:
+            return Response({"detail": "Invalid refresh token."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        response = Response({"detail": "Logout successful! All Tokens will be deleted. Refresh token is now invalid."}, status=status.HTTP_200_OK)
+        response.delete_cookie("access_token")
+        response.delete_cookie("refresh_token")
 
         return response
