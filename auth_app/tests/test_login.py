@@ -91,12 +91,12 @@ class LoginAPITestCase(APITestCase):
         self.assertIn('This field is required.', response.data['password'])
 
     def test_logout_successful(self):
-        access_token, refresh_token = self.perform_login()
+        _, access_token, refresh_token = self.perform_valid_login()
 
         self.perform_logout(access_token, refresh_token)
     
     def test_refresh_token_blacklisted(self):
-        access_token, refresh_token = self.perform_valid_login()
+        _, access_token, refresh_token = self.perform_valid_login()
 
         self.perform_logout(access_token, refresh_token)
 
