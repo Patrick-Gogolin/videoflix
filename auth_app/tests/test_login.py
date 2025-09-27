@@ -24,7 +24,7 @@ class LoginAPITestCase(APITestCase):
         self.assertIsNotNone(access_token)
         self.assertIsNotNone(refresh_token)
 
-        return login_response,access_token, refresh_token
+        return login_response, access_token, refresh_token
 
     def perform_invalid_login(self, email, password):
         url = reverse('token_obtain_pair')
@@ -95,13 +95,20 @@ class LoginAPITestCase(APITestCase):
 
         self.perform_logout(access_token, refresh_token)
     
-    def test_refresh_token_blacklisted(self):
-        _, access_token, refresh_token = self.perform_valid_login()
+    def test_logout_nonexistent_refresh_token(self):
+        _, access_token, _ = self.perform_valid_login()
 
-        self.perform_logout(access_token, refresh_token)
+        logout_url = reverse('logout')
+        logout_response = self.client.post(logout_url, HTTP_COOKIE=f'access_token={access_token}')
+        self.assertEqual(logout_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual("Refresh token not provided.", logout_response.data['detail'])
+    
+    def test_refresh_token_blacklisted(self):
+        _, access_token, blacklisted_refresh_token = self.perform_valid_login()
+
+        self.perform_logout(access_token, blacklisted_refresh_token)
 
         token_refresh_url = reverse('token_refresh')
-        token_refresh_response = self.client.post(token_refresh_url, HTTP_COOKIE=f'refresh_token={refresh_token}')
+        token_refresh_response = self.client.post(token_refresh_url, HTTP_COOKIE=f'refresh_token={blacklisted_refresh_token}')
         self.assertEqual(token_refresh_response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertIn("Invalid refresh token.", token_refresh_response.data['detail'])
-        #Hier muss geklärt werden wie das mit dem logout gemeint ist
