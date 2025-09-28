@@ -112,3 +112,25 @@ class LoginAPITestCase(APITestCase):
         token_refresh_response = self.client.post(token_refresh_url, HTTP_COOKIE=f'refresh_token={blacklisted_refresh_token}')
         self.assertEqual(token_refresh_response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertIn("Invalid refresh token.", token_refresh_response.data['detail'])
+
+    def test_token_refresh_successful(self):
+        _, access_token, refresh_token = self.perform_valid_login()
+
+        token_refresh_url = reverse('token_refresh')
+        token_refresh_response = self.client.post(token_refresh_url, HTTP_COOKIE=f'refresh_token={refresh_token}')
+        after_token_refresh_access_token = token_refresh_response.cookies.get('access_token').value
+        self.assertEqual(token_refresh_response.status_code, status.HTTP_200_OK)
+        self.assertIn('access_token', token_refresh_response.cookies)
+        self.assertNotEqual(access_token, after_token_refresh_access_token)
+    
+    def test_token_refresh_not_provided(self):
+        token_refresh_url = reverse('token_refresh')
+        token_refresh_response = self.client.post(token_refresh_url)
+        self.assertEqual(token_refresh_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Refresh token not provided.", token_refresh_response.data["detail"])
+    
+    def test_token_refresh_invalid_token(self):
+        token_refresh_url = reverse('token_refresh')
+        token_refresh_response = self.client.post(token_refresh_url, HTTP_COOKIE='refresh_token=invalidtoken')
+        self.assertEqual(token_refresh_response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn("Invalid refresh token.", token_refresh_response.data["detail"])
