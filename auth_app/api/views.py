@@ -44,8 +44,11 @@ class ActivateAccountView(APIView):
             user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             return Response({"message": "Invalid activation link."}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not hasattr(user, 'activation_token') or not user.activation_token.is_valid():
+        
+        if not hasattr(user, 'activation_token'):
+            return Response({"message": "Activation link is invalid or has expired."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not user.activation_token.is_valid():
             user.activation_token.delete()
             return Response({"message": "Activation link is invalid or has expired."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -57,7 +60,6 @@ class ActivateAccountView(APIView):
         user.activation_token.delete()
 
         return Response({"message": "Account successfully activated."}, status=status.HTTP_200_OK)
-
 
 class SendPasswortResetMail(APIView):
     permission_classes = [AllowAny]
@@ -82,7 +84,6 @@ class SendPasswortResetMail(APIView):
         )
 
         return Response({"detail": "An email has been sent to reset your password."})
-
 
 class ConfirmPasswordResetView(APIView):
     def post(self, request, uidb64, token):
@@ -112,7 +113,6 @@ class ConfirmPasswordResetView(APIView):
             user.activation_token.delete()
 
         return Response({"detail": "Your Password has been successfully reset."}, status=status.HTTP_200_OK)
-
 
 class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
