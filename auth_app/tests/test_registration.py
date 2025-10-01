@@ -34,7 +34,6 @@ class RegistrationAPITestCase(APITestCase):
         email = mail.outbox[0]
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn("Confirm your email", email.subject)
-        self.assertIn("Confirm your email", email.subject)
         self.assertIn("newuser@example.com", email.to)
         self.assertIn("Click the link to activate", email.body)
 

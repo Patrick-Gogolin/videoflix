@@ -6,12 +6,10 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RegistrationSerializer, PasswordResetSerializer, ConfirmNewPasswordSerializer, CustomTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import RegistrationSerializer, PasswordResetSerializer, ConfirmNewPasswordSerializer, CustomTokenObtainPairSerializer
 from .receivers import password_reset_requested, user_registered
-
-
 
 class RegistrationView(APIView):
     permission_classes = [AllowAny]
@@ -35,7 +33,6 @@ class RegistrationView(APIView):
         }
 
         return Response(data, status=status.HTTP_201_CREATED)
-
 
 class ActivateAccountView(APIView):
     def get(self, request, uidb64, token):
@@ -72,15 +69,10 @@ class SendPasswortResetMail(APIView):
 
         email = serializer.validated_data['email']
         user = User.objects.get(email=email)
-
-        token = default_token_generator.make_token(user)
-        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
-
+        
         password_reset_requested.send(
             sender=self.__class__,
             user=user,
-            token=token,
-            uidb64=uidb64
         )
 
         return Response({"detail": "An email has been sent to reset your password."})

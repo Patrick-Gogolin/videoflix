@@ -10,6 +10,6 @@ def enqueue_activation_email(sender, user, **kwargs):
     queue.enqueue(send_activation_email_task, user.pk, user.email, retry=Retry(max=3,interval=[10,30,60]))
 
 @receiver(password_reset_requested)
-def enqueue_password_reset_email(sender, user, token, uidb64, **kwargs):
+def enqueue_password_reset_email(sender, user, **kwargs):
     queue = django_rq.get_queue('default')
-    queue.enqueue(send_password_reset_email, user.email, token, uidb64, retry=Retry(max=3,interval=[10,30,60]))
+    queue.enqueue(send_password_reset_email, user.pk, user.email, retry=Retry(max=3,interval=[10,30,60]))
