@@ -14,7 +14,7 @@ class AccountActivationTestCase(APITestCase):
         self.email = "inactive@example.com"
         self.password = "securepassword123"
         self.user = User.objects.create_user(username=self.email, email=self.email, password=self.password, is_active=False)
-        activation_token = ActivationToken.objects.create(user=self.user)
+        self.activation_token = ActivationToken.objects.create(user=self.user)
     
     def test_account_activation_successful(self):
         uidb64 = urlsafe_base64_encode(force_bytes(self.user.pk))

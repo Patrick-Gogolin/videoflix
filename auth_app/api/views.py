@@ -69,7 +69,7 @@ class SendPasswortResetMail(APIView):
 
         email = serializer.validated_data['email']
         user = User.objects.get(email=email)
-        
+
         password_reset_requested.send(
             sender=self.__class__,
             user=user,
@@ -87,7 +87,7 @@ class ConfirmPasswordResetView(APIView):
             uidb64 = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uidb64)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            return Response({"message": "Invalid link."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "Activation link is invalid or has expired."}, status=status.HTTP_400_BAD_REQUEST)
 
         if not hasattr(user, 'activation_token') or not user.activation_token.is_valid():
             if hasattr(user, 'activation_token'):
