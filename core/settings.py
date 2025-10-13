@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'auth_app.apps.AuthAppConfig',
+    'video_app',
     'rest_framework',
     'corsheaders',
     'django_rq',
