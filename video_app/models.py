@@ -1,4 +1,5 @@
 from django.db import models
+import django_rq
 
 # Create your models here.
 
