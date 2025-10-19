@@ -54,7 +54,7 @@ backend.entrypoint.sh # Startup script for Docker container
 
 1. **Copy the environment file**
 
-  cp .env.template .env
+  `cp .env.template .env`
 
 
 2. Edit .env
@@ -62,7 +62,7 @@ backend.entrypoint.sh # Startup script for Docker container
 
 3. Build and run Docker containers
 
-  docker-compose up --build
+  `docker-compose up --build`
 
 
 Backend container will automatically:
