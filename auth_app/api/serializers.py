@@ -5,7 +5,12 @@ from ..models import ActivationToken
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user registration.
 
+    Validates password confirmation and ensures email uniqueness.
+    Creates a new inactive user with an associated activation token.
+    """
     confirmed_password = serializers.CharField(write_only=True)
 
     class Meta:
@@ -41,6 +46,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return user
 
 class PasswordResetSerializer(serializers.ModelSerializer):
+    """
+    Serializer for requesting a password reset.
+
+    Validates that the provided email exists and
+    creates or retrieves an activation token for the user.
+    """
     class Meta:
         model = User
 
@@ -62,6 +73,11 @@ class PasswordResetSerializer(serializers.ModelSerializer):
         return user
 
 class ConfirmNewPasswordSerializer(serializers.Serializer):
+    """
+    Serializer for confirming a new password.
+
+    Ensures that 'new_password' and 'confirm_password' match.
+    """
     new_password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
 
@@ -71,6 +87,13 @@ class ConfirmNewPasswordSerializer(serializers.Serializer):
         return data
     
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Serializer for obtaining JWT tokens using email and password.
+
+    Overrides the default TokenObtainPairSerializer to:
+    - Use 'email' instead of 'username' for authentication.
+    - Validate that the email exists and the password is correct.
+    """
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 

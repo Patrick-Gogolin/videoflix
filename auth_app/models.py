@@ -11,3 +11,6 @@ class ActivationToken(models.Model):
 
     def is_valid(self):
         return timezone.now() < self.created_at + timedelta(days=1)
+    
+    def __str__(self):
+        return f"ActivationToken for {self.user.username} {self.created_at}"
