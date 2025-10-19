@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 def generate_thumbnail(video_id):
     try:
-        
         video = Video.objects.get(id=video_id)
         input_path = video.video_file.path
 
