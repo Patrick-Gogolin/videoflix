@@ -77,14 +77,14 @@ Start RQ worker for background tasks
 
 Start Gunicorn server on port 8000
 
-Accessing the backend
+## Accessing the backend
 
 API base URL: http://localhost:8000/api/
 
 Django admin: http://localhost:8000/admin/
 Use the superuser from .env
 
-Volumes & Media
+## Volumes & Media
 
 Docker Compose uses named volumes:
 
@@ -99,7 +99,7 @@ Static: Static files and assets (CSS, JS, email logos) are stored in /app/static
 
 Important: For email logos or other assets referenced in templates, place them in static/images/ inside your project.
 
-JWT Authentication
+## JWT Authentication
 
 Access token: 30 min
 
@@ -131,7 +131,7 @@ To manually start a worker:
 
 docker exec -it videoflix_backend python manage.py rqworker default
 
-Dependencies
+## Dependencies
 
 Key Python packages:
 
@@ -180,7 +180,7 @@ EMAIL_USE_TLS=True
 EMAIL_USE_SSL=False
 DEFAULT_FROM_EMAIL=default_from_email
 
-Notes
+## Notes
 
 Videos are uploaded via Django admin and saved in /app/media/videos/.
 
