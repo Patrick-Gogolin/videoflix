@@ -1,4 +1,5 @@
-Videoflix Backend
+# Videoflix Backend
+
 
 Videoflix is a Django 5.2.6-based backend for a video streaming platform. It supports user registration, authentication with JWT tokens, video upload and streaming, email verification, and password reset. It runs fully in Docker with PostgreSQL and Redis.
 
