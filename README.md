@@ -109,7 +109,7 @@ Stored in HTTP-only cookies for security.
 
 Custom authentication class CookieJWTAuthentication reads tokens from cookies first, then headers.
 
-Sending Emails
+## Sending Emails
 
 Uses Django’s SMTP backend.
 
@@ -123,7 +123,7 @@ Place your email templates in templates/emails/.
 
 Note: During local development, images in emails must use publicly accessible URLs or be attached as inline files (CID).
 
-Running Background Jobs
+## Running Background Jobs
 
 RQ worker is started automatically by backend.entrypoint.sh.
 
