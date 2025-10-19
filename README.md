@@ -34,20 +34,20 @@ Videoflix is a Django 5.2.6-based backend for a video streaming platform. It sup
 
 ---
 
-Project Structure
-core/                     # Django project root
-├─ settings.py            # Django settings
+## Project Structure
+core/ # Django project root
+├─ settings.py # Django settings
 ├─ wsgi.py
-auth_app/                 # Authentication app
-video_app/                # Video app
-static/                   # Static files (CSS, JS, images)
-media/                    # Uploaded media files (videos, thumbnails)
-templates/                # Email and HTML templates
-backend.Dockerfile         # Dockerfile for backend
-docker-compose.yml         # Docker Compose config
-.env.template              # Environment variable template
-requirements.txt           # Python dependencies
-backend.entrypoint.sh      # Startup script for Docker container
+auth_app/ # Authentication app
+video_app/ # Video app
+static/ # Static files (CSS, JS, images)
+media/ # Uploaded media files (videos, thumbnails)
+templates/ # Email and HTML templates
+backend.Dockerfile # Dockerfile for backend
+docker-compose.yml # Docker Compose config
+.env.template # Environment variable template
+requirements.txt # Python dependencies
+backend.entrypoint.sh # Startup script for Docker container
 
 
 Setup
