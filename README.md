@@ -24,15 +24,15 @@ Videoflix is a Django 5.2.6-based backend for a video streaming platform. It sup
   All services run in Docker: backend, PostgreSQL, Redis.
 
 ---
-Prerequisites
 
-Docker & Docker Compose
+## Prerequisites
 
-Python 3.12 (for local testing outside Docker)
+- Docker & Docker Compose
+- Python 3.12 (for local testing outside Docker)
+- SMTP email credentials (for sending emails)
+- `.env` file with environment variables (see template below)
 
-SMTP email credentials (for sending emails)
-
-.env file with environment variables (see template below)
+---
 
 Project Structure
 core/                     # Django project root
