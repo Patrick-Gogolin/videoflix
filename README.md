@@ -3,26 +3,27 @@
 
 Videoflix is a Django 5.2.6-based backend for a video streaming platform. It supports user registration, authentication with JWT tokens, video upload and streaming, email verification, and password reset. It runs fully in Docker with PostgreSQL and Redis.
 
-Features
+## Features
 
-User authentication & authorization
-JWT-based authentication, with tokens stored in HTTP-only cookies for secure web apps.
+- **User authentication & authorization**  
+  JWT-based authentication, with tokens stored in HTTP-only cookies for secure web apps.
 
-User registration & email verification
-Sends activation emails after registration using Django’s email system and background jobs (RQ).
+- **User registration & email verification**  
+  Sends activation emails after registration using Django’s email system and background jobs (RQ).
 
-Password reset
-Secure password reset flow via email with expiring activation tokens.
+- **Password reset**  
+  Secure password reset flow via email with expiring activation tokens.
 
-Video management
-Upload videos and thumbnails via the admin panel. HLS streaming generation supported.
+- **Video management**  
+  Upload videos and thumbnails via the admin panel. HLS streaming generation supported.
 
-Background tasks
-Uses django-rq for sending emails asynchronously.
+- **Background tasks**  
+  Uses `django-rq` for sending emails asynchronously.
 
-Dockerized development & deployment
-All services run in Docker: backend, PostgreSQL, Redis.
+- **Dockerized development & deployment**  
+  All services run in Docker: backend, PostgreSQL, Redis.
 
+---
 Prerequisites
 
 Docker & Docker Compose
