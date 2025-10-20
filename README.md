@@ -1,66 +1,68 @@
-Videoflix Backend
+# Videoflix Backend
+
 
 Videoflix is a Django 5.2.6-based backend for a video streaming platform. It supports user registration, authentication with JWT tokens, video upload and streaming, email verification, and password reset. It runs fully in Docker with PostgreSQL and Redis.
 
-Features
+## Features
 
-User authentication & authorization
-JWT-based authentication, with tokens stored in HTTP-only cookies for secure web apps.
+- **User authentication & authorization**  
+  JWT-based authentication, with tokens stored in HTTP-only cookies for secure web apps.
 
-User registration & email verification
-Sends activation emails after registration using Django’s email system and background jobs (RQ).
+- **User registration & email verification**  
+  Sends activation emails after registration using Django’s email system and background jobs (RQ).
 
-Password reset
-Secure password reset flow via email with expiring activation tokens.
+- **Password reset**  
+  Secure password reset flow via email with expiring activation tokens.
 
-Video management
-Upload videos and thumbnails via the admin panel. HLS streaming generation supported.
+- **Video management**  
+  Upload videos and thumbnails via the admin panel. HLS streaming generation supported.
 
-Background tasks
-Uses django-rq for sending emails asynchronously.
+- **Background tasks**  
+  Uses `django-rq` for sending emails asynchronously.
 
-Dockerized development & deployment
-All services run in Docker: backend, PostgreSQL, Redis.
+- **Dockerized development & deployment**  
+  All services run in Docker: backend, PostgreSQL, Redis.
 
-Prerequisites
+---
 
-Docker & Docker Compose
+## Prerequisites
 
-Python 3.12 (for local testing outside Docker)
+- Docker & Docker Compose
+- Python 3.12 (for local testing outside Docker)
+- SMTP email credentials (for sending emails)
+- `.env` file with environment variables (see template below)
 
-SMTP email credentials (for sending emails)
+---
 
-.env file with environment variables (see template below)
-
-Project Structure
-core/                     # Django project root
-├─ settings.py            # Django settings
+## Project Structure
+core/ # Django project root
+├─ settings.py # Django settings
 ├─ wsgi.py
-auth_app/                 # Authentication app
-video_app/                # Video app
-static/                   # Static files (CSS, JS, images)
-media/                    # Uploaded media files (videos, thumbnails)
-templates/                # Email and HTML templates
-backend.Dockerfile         # Dockerfile for backend
-docker-compose.yml         # Docker Compose config
-.env.template              # Environment variable template
-requirements.txt           # Python dependencies
-backend.entrypoint.sh      # Startup script for Docker container
+auth_app/ # Authentication app
+video_app/ # Video app
+static/ # Static files (CSS, JS, images)
+media/ # Uploaded media files (videos, thumbnails)
+templates/ # Email and HTML templates
+backend.Dockerfile # Dockerfile for backend
+docker-compose.yml # Docker Compose config
+.env.template # Environment variable template
+requirements.txt # Python dependencies
+backend.entrypoint.sh # Startup script for Docker container
 
 
-Setup
+## Setup
 
-Copy the environment file
+1. **Copy the environment file**
 
-cp .env.template .env
+  `cp .env.template .env`
 
 
-Edit .env
-Set your database credentials, email server settings, and superuser details.
+2. Edit .env
+  Set your database credentials, email server settings, and superuser details.
 
-Build and run Docker containers
+3. Build and run Docker containers
 
-docker-compose up --build
+  `docker-compose up --build`
 
 
 Backend container will automatically:
@@ -75,14 +77,14 @@ Start RQ worker for background tasks
 
 Start Gunicorn server on port 8000
 
-Accessing the backend
+## Accessing the backend
 
 API base URL: http://localhost:8000/api/
 
 Django admin: http://localhost:8000/admin/
 Use the superuser from .env
 
-Volumes & Media
+## Volumes & Media
 
 Docker Compose uses named volumes:
 
@@ -97,7 +99,7 @@ Static: Static files and assets (CSS, JS, email logos) are stored in /app/static
 
 Important: For email logos or other assets referenced in templates, place them in static/images/ inside your project.
 
-JWT Authentication
+## JWT Authentication
 
 Access token: 30 min
 
@@ -107,7 +109,7 @@ Stored in HTTP-only cookies for security.
 
 Custom authentication class CookieJWTAuthentication reads tokens from cookies first, then headers.
 
-Sending Emails
+## Sending Emails
 
 Uses Django’s SMTP backend.
 
@@ -121,7 +123,7 @@ Place your email templates in templates/emails/.
 
 Note: During local development, images in emails must use publicly accessible URLs or be attached as inline files (CID).
 
-Running Background Jobs
+## Running Background Jobs
 
 RQ worker is started automatically by backend.entrypoint.sh.
 
@@ -129,7 +131,7 @@ To manually start a worker:
 
 docker exec -it videoflix_backend python manage.py rqworker default
 
-Dependencies
+## Dependencies
 
 Key Python packages:
 
@@ -178,7 +180,7 @@ EMAIL_USE_TLS=True
 EMAIL_USE_SSL=False
 DEFAULT_FROM_EMAIL=default_from_email
 
-Notes
+## Notes
 
 Videos are uploaded via Django admin and saved in /app/media/videos/.
 
