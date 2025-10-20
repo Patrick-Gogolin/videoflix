@@ -7,6 +7,15 @@ from ..models import Video
 logger = logging.getLogger(__name__)
 
 def generate_thumbnail(video_id):
+    """
+    Generates a thumbnail for the given Video instance.
+
+    Uses ffmpeg to capture a frame at 5 seconds and saves it as a JPEG
+    in MEDIA_ROOT/thumbnails/. Updates the Video instance's `thumbnail` field.
+
+    Args:
+        video_id (int): ID of the Video instance.
+    """
     try:
         video = Video.objects.get(id=video_id)
         input_path = video.video_file.path
@@ -37,6 +46,16 @@ def generate_thumbnail(video_id):
 
 
 def generate_hls(video_id):
+    """
+    Generates HLS streaming files for the given Video instance.
+
+    Uses ffmpeg to create HLS playlists in multiple resolutions
+    (480p, 720p, 1080p) and saves them under MEDIA_ROOT/videos/<video_id>/. 
+    Updates the Video instance's `hls_ready` field upon success.
+
+    Args:
+        video_id (int): ID of the Video instance.
+    """
     try:
         video = Video.objects.get(id=video_id)
         input_path = video.video_file.path
